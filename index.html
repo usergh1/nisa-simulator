@@ -63,11 +63,23 @@ html, body {
   margin: 0;
 }
 .top-section {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 1.5rem;
   align-items: center;
+}
+.pie-col {
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.line-col {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .pie-wrap {
   position: relative;
@@ -93,19 +105,19 @@ html, body {
 .right-pane-label {
   font-size: 13px;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .cap-note {
   font-size: 11px;
   color: var(--text-tertiary);
   line-height: 1.4;
-  margin-bottom: 8px;
-  min-height: 15px;
+  min-height: 16px;
+  margin-bottom: 2px;
 }
 .line-wrap {
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 240px;
 }
 .legend {
   display: flex;
@@ -252,13 +264,8 @@ input[type=range]::-moz-range-thumb {
   }
   .title { font-size: 20px; }
   .subtitle { font-size: 13px; }
-  .top-section {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .pie-wrap {
+  .pie-col {
     max-width: 220px;
-    margin: 0 auto;
   }
   .line-wrap {
     height: 200px;
@@ -475,16 +482,16 @@ input[type=range]::-moz-range-thumb {
 
       if (ann.yearsLabel) {
         const centerX = chartArea.left + (chartArea.right - chartArea.left) / 2;
-        const topY = chartArea.top + 8;
+        const topY = chartArea.top + 4;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillStyle = '#04342C';
-        ctx.font = '500 26px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
+        ctx.font = '500 22px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
         ctx.fillText(ann.yearsLabel, centerX, topY);
         if (ann.yearsSubLabel) {
           ctx.font = '11px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
           ctx.fillStyle = '#0F6E56';
-          ctx.fillText(ann.yearsSubLabel, centerX, topY + 32);
+          ctx.fillText(ann.yearsSubLabel, centerX, topY + 26);
         }
       }
 
@@ -617,7 +624,7 @@ input[type=range]::-moz-range-thumb {
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
-          layout: { padding: { top: 52, right: 8, bottom: 0, left: 0 } },
+          layout: { padding: { top: 30, right: 8, bottom: 0, left: 0 } },
           plugins: {
             legend: { display: false },
             tooltip: {
