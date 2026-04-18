@@ -224,6 +224,28 @@ input[type=range]::-moz-range-thumb {
   color: var(--surplus-mid);
   line-height: 1.6;
 }
+.asset-box {
+  background: var(--surplus-bg);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--surplus-mid);
+  line-height: 1.6;
+}
+.asset-box-label {
+  margin-bottom: 2px;
+}
+.asset-box-value {
+  font-size: 13px;
+}
+.asset-box-value span {
+  color: var(--surplus-dark);
+  font-weight: 500;
+}
+#asset-total {
+  font-size: 15px;
+}
 @media (max-width: 600px) {
   .container {
     padding: 1.5rem 1rem 0;
@@ -329,6 +351,14 @@ input[type=range]::-moz-range-thumb {
     <div class="cap-note" id="cap-note"></div>
     <div class="line-wrap">
       <canvas id="line-chart" role="img" aria-label="新NISA元本到達までの資産推移。グレー直線が元本、緑曲線が年利8%運用後の資産総額。">元本と運用後資産の推移</canvas>
+    </div>
+    <div class="asset-box">
+      <div class="asset-box-label">積立終了時点の資産総額（年利8%運用想定）</div>
+      <div class="asset-box-value">
+        元本 <span id="asset-principal">1,800万</span>
+        + 運用益 <span id="asset-gain">—</span>
+        = <span id="asset-total">—</span>
+      </div>
     </div>
   </div>
 </div>
@@ -459,7 +489,7 @@ input[type=range]::-moz-range-thumb {
       }
 
       if (ann.endPoint) {
-        const { x: xVal, y: yVal, label } = ann.endPoint;
+        const { x: xVal, y: yVal } = ann.endPoint;
         const x = scales.x.getPixelForValue(xVal);
         const y = scales.y.getPixelForValue(yVal);
 
@@ -470,20 +500,6 @@ input[type=range]::-moz-range-thumb {
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
-        ctx.fillStyle = '#04342C';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        const labelX = Math.min(x - 8, chartArea.right - 4);
-        const labelY = Math.max(y - 8, chartArea.top + 56);
-        ctx.fillText(label, labelX, labelY);
-
-        if (ann.endPointSub) {
-          ctx.font = '10px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
-          ctx.fillStyle = '#0F6E56';
-          ctx.fillText(ann.endPointSub, labelX, labelY + 14);
-        }
       }
 
       ctx.restore();
@@ -525,24 +541,30 @@ input[type=range]::-moz-range-thumb {
     document.getElementById('pie-center').textContent = fmtMan1(surplus) + '/月';
 
     const capNoteEl = document.getElementById('cap-note');
+    const assetPrincipalEl = document.getElementById('asset-principal');
+    const assetGainEl = document.getElementById('asset-gain');
+    const assetTotalEl = document.getElementById('asset-total');
     const remainingCap = NISA_CAP - existing;
 
     let totalMonths = 0;
     let finalBalance = existing;
     let yearsLabel = '—';
     let yearsSubLabel = '';
-    let endLabel = '—';
-    let endSubLabel = '';
 
     if (remainingCap <= 0) {
       totalMonths = 0;
       yearsLabel = '既に満額';
       finalBalance = existing;
-      endLabel = fmtManInt(finalBalance);
+      assetPrincipalEl.textContent = '1,800万';
+      assetGainEl.textContent = '0万';
+      assetTotalEl.textContent = fmtManInt(finalBalance);
       capNoteEl.textContent = '';
     } else if (actualInvest <= 0) {
       yearsLabel = '到達不可';
       yearsSubLabel = '投資余力が不足';
+      assetPrincipalEl.textContent = '1,800万';
+      assetGainEl.textContent = '—';
+      assetTotalEl.textContent = '—';
       capNoteEl.textContent = '';
     } else {
       totalMonths = Math.ceil(remainingCap / actualInvest);
@@ -557,8 +579,9 @@ input[type=range]::-moz-range-thumb {
       }
       finalBalance = balance;
       const gain = finalBalance - NISA_CAP;
-      endLabel = '資産総額 ' + fmtManInt(finalBalance);
-      endSubLabel = '運用益 +' + fmtManInt(gain);
+      assetPrincipalEl.textContent = '1,800万';
+      assetGainEl.textContent = fmtManInt(gain);
+      assetTotalEl.textContent = fmtManInt(finalBalance);
 
       if (surplus > NISA_MONTHLY_CAP) {
         const excess = surplus - NISA_MONTHLY_CAP;
@@ -577,9 +600,7 @@ input[type=range]::-moz-range-thumb {
 
     const endPoint = (totalMonths > 0 && actualInvest > 0) ? {
       x: totalMonths,
-      y: finalBalance,
-      label: endLabel,
-      sub: endSubLabel
+      y: finalBalance
     } : null;
 
     if (!lineChart) {
@@ -645,8 +666,7 @@ input[type=range]::-moz-range-thumb {
       targetMonths: totalMonths > 0 ? totalMonths : null,
       yearsLabel: yearsLabel,
       yearsSubLabel: yearsSubLabel,
-      endPoint: endPoint ? { x: endPoint.x, y: endPoint.y, label: endPoint.label } : null,
-      endPointSub: endPoint ? endPoint.sub : null
+      endPoint: endPoint
     };
     lineChart.update('none');
 
