@@ -111,7 +111,8 @@ html, body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 14px;
-  margin-bottom: 1.5rem;
+  margin-top: 12px;
+  justify-content: center;
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -132,7 +133,7 @@ html, body {
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
-  margin-bottom: 6rem;
+  margin-top: 1.25rem;
 }
 .sliders-section-note {
   font-size: 11px;
@@ -225,7 +226,7 @@ input[type=range]::-moz-range-thumb {
 }
 @media (max-width: 600px) {
   .container {
-    padding: 1.5rem 1rem 1rem;
+    padding: 1.5rem 1rem 0;
   }
   .title { font-size: 20px; }
   .subtitle { font-size: 13px; }
@@ -240,15 +241,8 @@ input[type=range]::-moz-range-thumb {
   .line-wrap {
     height: 200px;
   }
-  .slider-row label {
-    min-width: 80px;
-    font-size: 12px;
-  }
-  .slider-value {
-    min-width: 92px;
-  }
-  .slider-value .main {
-    font-size: 12px;
+  .footer {
+    margin-bottom: 0.5rem;
   }
   .sliders-section {
     position: sticky;
@@ -256,13 +250,53 @@ input[type=range]::-moz-range-thumb {
     margin-left: -1rem;
     margin-right: -1rem;
     margin-bottom: 0;
+    padding: 0.6rem 0.9rem 0.5rem;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-top: 0.5px solid var(--border);
-    max-height: 62vh;
+    max-height: 42vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     background: var(--bg-secondary);
     z-index: 10;
+  }
+  .sliders-section .sliders-section-note {
+    font-size: 9px;
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+  .sliders-section .top-sliders {
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+  }
+  .sliders-section .slider-row {
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .sliders-section .slider-row label {
+    min-width: 68px;
+    font-size: 10px;
+  }
+  .sliders-section .slider-value {
+    min-width: 80px;
+    line-height: 1.1;
+  }
+  .sliders-section .slider-value .main {
+    font-size: 11px;
+  }
+  .sliders-section .slider-value .avg {
+    font-size: 8.5px;
+    margin-top: 0;
+  }
+  .sliders-section input[type=range] {
+    height: 3px;
+  }
+  .sliders-section input[type=range]::-webkit-slider-thumb {
+    width: 14px; height: 14px;
+    border-width: 1.5px;
+  }
+  .sliders-section input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-width: 1.5px;
   }
 }
 </style>
@@ -279,7 +313,7 @@ input[type=range]::-moz-range-thumb {
 </div>
 
 <div class="top-section">
-  <div>
+  <div class="pie-col">
     <div class="pie-wrap">
       <canvas id="pie" role="img" aria-label="手取り月収を100%とした、支出内訳と投資余力の円グラフ">支出内訳と投資余力</canvas>
       <div class="pie-center">
@@ -287,9 +321,10 @@ input[type=range]::-moz-range-thumb {
         <div class="pie-center-value" id="pie-center">—</div>
       </div>
     </div>
+    <div class="legend" id="legend"></div>
   </div>
 
-  <div>
+  <div class="line-col">
     <div class="right-pane-label">新NISA満額（元本1,800万円）まで</div>
     <div class="cap-note" id="cap-note"></div>
     <div class="line-wrap">
@@ -298,7 +333,15 @@ input[type=range]::-moz-range-thumb {
   </div>
 </div>
 
-<div class="legend" id="legend"></div>
+<div class="footer">
+  <div class="footer-note">生活防衛資金（失業や病気への備え）は別途確保済みの前提。NISA年間投入上限は360万円（つみたて枠120万＋成長投資枠240万）。上限を超える余剰分は本ツールの対象外。年利8%は過去の株式市場の長期平均付近の想定値で将来を保証するものではない。</div>
+  <div>
+    データ出典:
+    <a href="https://www.stat.go.jp/data/kakei/2024np/index.html" target="_blank" rel="noopener">総務省 家計調査 2024年</a>
+    ・
+    <a href="https://www.homes.co.jp/cont/money/money_00186/" target="_blank" rel="noopener">LIFULL HOME'S 東京23区 家賃相場</a>
+  </div>
+</div>
 
 <div class="sliders-section">
   <div class="sliders-section-note">※ 平均 = 東京一人暮らしの標準的な目安（出典は下部）</div>
@@ -322,16 +365,6 @@ input[type=range]::-moz-range-thumb {
   </div>
 
   <div id="sliders"></div>
-</div>
-
-<div class="footer">
-  <div class="footer-note">生活防衛資金（失業や病気への備え）は別途確保済みの前提。NISA年間投入上限は360万円（つみたて枠120万＋成長投資枠240万）。上限を超える余剰分は本ツールの対象外。年利8%は過去の株式市場の長期平均付近の想定値で将来を保証するものではない。</div>
-  <div>
-    データ出典:
-    <a href="https://www.stat.go.jp/data/kakei/2024np/index.html" target="_blank" rel="noopener">総務省 家計調査 2024年</a>
-    ・
-    <a href="https://www.homes.co.jp/cont/money/money_00186/" target="_blank" rel="noopener">LIFULL HOME'S 東京23区 家賃相場</a>
-  </div>
 </div>
 
 </div>
