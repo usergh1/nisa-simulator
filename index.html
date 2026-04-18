@@ -260,22 +260,30 @@ input[type=range]::-moz-range-thumb {
 }
 @media (max-width: 600px) {
   .container {
-    padding: 0.75rem 1rem 0;
+    padding: 0.5rem 1rem 0;
   }
   .header {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   .title { font-size: 20px; }
   .subtitle { font-size: 13px; }
   .top-section {
-    gap: 8px;
-    margin-bottom: 0.75rem;
+    gap: 4px;
+    margin-bottom: 0.5rem;
   }
   .pie-col {
-    max-width: 200px;
+    max-width: 190px;
   }
   .legend {
-    margin-top: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    margin-top: 4px;
+    padding: 0 8px;
+    justify-content: stretch;
+  }
+  .legend span {
+    font-size: 11px;
   }
   .line-wrap {
     height: 200px;
