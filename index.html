@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NISA満額シミュレーター</title>
+<meta name="description" content="もし東京で一人暮らししていたら、NISA満額まで何年？支出をスライダーで調整して、新NISA生涯投資枠1800万円の元本到達期間と資産総額をシミュレート。">
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f7f7f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #999999;
+  --border: rgba(0,0,0,0.08);
+  --border-secondary: rgba(0,0,0,0.15);
+  --surplus: #1D9E75;
+  --surplus-dark: #04342C;
+  --surplus-mid: #0F6E56;
+  --surplus-bg: #E1F5EE;
+  --principal: #888780;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 6rem;
+}
+.header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+.title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.3;
+  margin: 0 0 6px;
+}
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+.top-section {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+.pie-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+.pie-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.pie-center-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.pie-center-value {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--surplus-dark);
+}
+.right-pane-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.cap-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  margin-bottom: 8px;
+  min-height: 15px;
+}
+.line-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 1.5rem;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.legend .surplus-item {
+  font-weight: 500;
+}
+.legend-dot {
+  width: 9px; height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.sliders-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  margin-bottom: 6rem;
+}
+.sliders-section-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.slider-row label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 100px;
+}
+.slider-row input[type=range] {
+  flex: 1;
+  min-width: 0;
+}
+.slider-value {
+  min-width: 120px;
+  text-align: right;
+  line-height: 1.2;
+}
+.slider-value .main {
+  font-size: 13px;
+  font-weight: 500;
+}
+.slider-value .avg {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 1px;
+}
+.top-sliders {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border-secondary);
+  border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  background: var(--surplus);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.15);
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--surplus);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+.footer {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 0.5px solid var(--border);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.7;
+}
+.footer a {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.footer-note {
+  margin-bottom: 6px;
+}
+.hero-box {
+  background: var(--surplus-bg);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--surplus-mid);
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .container {
+    padding: 1.5rem 1rem 1rem;
+  }
+  .title { font-size: 20px; }
+  .subtitle { font-size: 13px; }
+  .top-section {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .pie-wrap {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+  .line-wrap {
+    height: 200px;
+  }
+  .slider-row label {
+    min-width: 80px;
+    font-size: 12px;
+  }
+  .slider-value {
+    min-width: 92px;
+  }
+  .slider-value .main {
+    font-size: 12px;
+  }
+  .sliders-section {
+    position: sticky;
+    bottom: 0;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    margin-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-top: 0.5px solid var(--border);
+    max-height: 62vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-secondary);
+    z-index: 10;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2 class="sr-only">NISA満額シミュレーター。もし東京で一人暮らししていたらを想定して、新NISA生涯投資枠1800万円の元本を何年で埋められるかをシミュレートするツール。</h2>
+
+<div class="header">
+  <h1 class="title">NISA満額シミュレーター</h1>
+  <p class="subtitle">もし東京で一人暮らししていたら、NISA満額まで何年？</p>
+</div>
+
+<div class="top-section">
+  <div>
+    <div class="pie-wrap">
+      <canvas id="pie" role="img" aria-label="手取り月収を100%とした、支出内訳と投資余力の円グラフ">支出内訳と投資余力</canvas>
+      <div class="pie-center">
+        <div class="pie-center-label">投資余力</div>
+        <div class="pie-center-value" id="pie-center">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="right-pane-label">新NISA満額（元本1,800万円）まで</div>
+    <div class="cap-note" id="cap-note"></div>
+    <div class="line-wrap">
+      <canvas id="line-chart" role="img" aria-label="新NISA元本到達までの資産推移。グレー直線が元本、緑曲線が年利8%運用後の資産総額。">元本と運用後資産の推移</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<div class="sliders-section">
+  <div class="sliders-section-note">※ 平均 = 東京一人暮らしの標準的な目安（出典は下部）</div>
+
+  <div class="top-sliders">
+    <div class="slider-row">
+      <label for="s-existing">NISA既投入額</label>
+      <input type="range" min="0" max="18000000" step="100000" value="0" id="s-existing">
+      <div class="slider-value">
+        <div class="main" id="v-existing">¥0</div>
+        <div class="avg">(上限 ¥18,000,000)</div>
+      </div>
+    </div>
+    <div class="slider-row">
+      <label for="s-income">手取り月収</label>
+      <input type="range" min="200000" max="500000" step="10000" value="300000" id="s-income">
+      <div class="slider-value">
+        <div class="main" id="v-income">¥300,000</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sliders"></div>
+</div>
+
+<div class="footer">
+  <div class="footer-note">生活防衛資金（失業や病気への備え）は別途確保済みの前提。NISA年間投入上限は360万円（つみたて枠120万＋成長投資枠240万）。上限を超える余剰分は本ツールの対象外。年利8%は過去の株式市場の長期平均付近の想定値で将来を保証するものではない。</div>
+  <div>
+    データ出典:
+    <a href="https://www.stat.go.jp/data/kakei/2024np/index.html" target="_blank" rel="noopener">総務省 家計調査 2024年</a>
+    ・
+    <a href="https://www.homes.co.jp/cont/money/money_00186/" target="_blank" rel="noopener">LIFULL HOME'S 東京23区 家賃相場</a>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+  let income = 300000;
+  let existing = 0;
+  const items = [
+    { id:'rent',    label:'家賃',         val:85000, avg:85000, min:50000, max:180000, step:1000,  color:'#534AB7' },
+    { id:'food',    label:'食費',         val:48000, avg:48000, min:20000, max:90000,  step:1000,  color:'#1D9E75' },
+    { id:'util',    label:'光熱水道',     val:13000, avg:13000, min:5000,  max:25000,  step:500,   color:'#378ADD' },
+    { id:'comm',    label:'通信費',       val:10000, avg:10000, min:3000,  max:20000,  step:500,   color:'#D85A30' },
+    { id:'daily',   label:'日用品・雑費', val:8000,  avg:8000,  min:2000,  max:20000,  step:500,   color:'#BA7517' },
+    { id:'social',  label:'交際・娯楽',   val:20000, avg:20000, min:0,     max:60000,  step:1000,  color:'#D4537E' },
+    { id:'other',   label:'その他',       val:7000,  avg:7000,  min:0,     max:30000,  step:500,   color:'#888780' },
+  ];
+
+  const SURPLUS_COLOR = '#1D9E75';
+  const PRINCIPAL_COLOR = '#888780';
+  const NISA_CAP = 18000000;
+  const NISA_ANNUAL_CAP = 3600000;
+  const NISA_MONTHLY_CAP = NISA_ANNUAL_CAP / 12;
+  const MONTHLY_RATE = 0.08 / 12;
+
+  const fmt = v => (v < 0 ? '-¥' + Math.abs(v).toLocaleString() : '¥' + v.toLocaleString());
+  const fmtMan1 = v => {
+    if (v >= 100000000) return (v / 100000000).toFixed(2) + '億';
+    return (v / 10000).toFixed(1) + '万';
+  };
+  const fmtManInt = v => {
+    if (v >= 100000000) return (v / 100000000).toFixed(2) + '億';
+    return Math.round(v / 10000).toLocaleString() + '万';
+  };
+
+  const slidersEl = document.getElementById('sliders');
+  items.forEach(it => {
+    const row = document.createElement('div');
+    row.className = 'slider-row';
+    row.innerHTML =
+      '<label for="s-' + it.id + '">' + it.label + '</label>' +
+      '<input type="range" min="' + it.min + '" max="' + it.max + '" step="' + it.step + '" value="' + it.val + '" id="s-' + it.id + '">' +
+      '<div class="slider-value">' +
+        '<div class="main" id="v-' + it.id + '">' + fmt(it.val) + '</div>' +
+        '<div class="avg">(平均 ' + fmt(it.avg) + ')</div>' +
+      '</div>';
+    slidersEl.appendChild(row);
+    row.querySelector('input').addEventListener('input', e => { it.val = +e.target.value; update(); });
+  });
+
+  document.getElementById('s-income').addEventListener('input', e => { income = +e.target.value; update(); });
+  document.getElementById('s-existing').addEventListener('input', e => { existing = +e.target.value; update(); });
+
+  let pieChart, lineChart;
+
+  const annotationPlugin = {
+    id: 'annotation-plugin',
+    afterDraw(chart) {
+      const ann = chart.$annotations;
+      if (!ann) return;
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+
+      ctx.save();
+
+      if (ann.targetMonths != null) {
+        const x = scales.x.getPixelForValue(ann.targetMonths);
+        ctx.strokeStyle = 'rgba(15,110,86,0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(x, chartArea.top);
+        ctx.lineTo(x, chartArea.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      if (ann.yearsLabel) {
+        const centerX = chartArea.left + (chartArea.right - chartArea.left) / 2;
+        const topY = chartArea.top + 8;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#04342C';
+        ctx.font = '500 26px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
+        ctx.fillText(ann.yearsLabel, centerX, topY);
+        if (ann.yearsSubLabel) {
+          ctx.font = '11px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
+          ctx.fillStyle = '#0F6E56';
+          ctx.fillText(ann.yearsSubLabel, centerX, topY + 32);
+        }
+      }
+
+      if (ann.endPoint) {
+        const { x: xVal, y: yVal, label } = ann.endPoint;
+        const x = scales.x.getPixelForValue(xVal);
+        const y = scales.y.getPixelForValue(yVal);
+
+        ctx.fillStyle = '#1D9E75';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
+        ctx.fillStyle = '#04342C';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        const labelX = Math.min(x - 8, chartArea.right - 4);
+        const labelY = Math.max(y - 8, chartArea.top + 56);
+        ctx.fillText(label, labelX, labelY);
+
+        if (ann.endPointSub) {
+          ctx.font = '10px -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif';
+          ctx.fillStyle = '#0F6E56';
+          ctx.fillText(ann.endPointSub, labelX, labelY + 14);
+        }
+      }
+
+      ctx.restore();
+    }
+  };
+
+  function simulate(monthlyInvest, totalMonths, start) {
+    const principalSeries = [];
+    const investedSeries = [];
+    const labels = [];
+    const sampleCount = 40;
+    const step = Math.max(1, Math.ceil(totalMonths / sampleCount));
+    let balance = start;
+    let principal = start;
+    labels.push(0);
+    principalSeries.push(principal);
+    investedSeries.push(balance);
+    for (let m = 1; m <= totalMonths; m++) {
+      principal += monthlyInvest;
+      balance = (balance + monthlyInvest) * (1 + MONTHLY_RATE);
+      if (m % step === 0 || m === totalMonths) {
+        labels.push(m);
+        principalSeries.push(Math.min(principal, NISA_CAP));
+        investedSeries.push(balance);
+      }
+    }
+    return { labels, principalSeries, investedSeries, finalBalance: balance };
+  }
+
+  function update() {
+    document.getElementById('v-income').textContent = fmt(income);
+    document.getElementById('v-existing').textContent = fmt(existing);
+    items.forEach(it => { document.getElementById('v-' + it.id).textContent = fmt(it.val); });
+
+    const totalExp = items.reduce((s,it) => s + it.val, 0);
+    const surplus = Math.max(0, income - totalExp);
+    const actualInvest = Math.min(surplus, NISA_MONTHLY_CAP);
+
+    document.getElementById('pie-center').textContent = fmtMan1(surplus) + '/月';
+
+    const capNoteEl = document.getElementById('cap-note');
+    const remainingCap = NISA_CAP - existing;
+
+    let totalMonths = 0;
+    let finalBalance = existing;
+    let yearsLabel = '—';
+    let yearsSubLabel = '';
+    let endLabel = '—';
+    let endSubLabel = '';
+
+    if (remainingCap <= 0) {
+      totalMonths = 0;
+      yearsLabel = '既に満額';
+      finalBalance = existing;
+      endLabel = fmtManInt(finalBalance);
+      capNoteEl.textContent = '';
+    } else if (actualInvest <= 0) {
+      yearsLabel = '到達不可';
+      yearsSubLabel = '投資余力が不足';
+      capNoteEl.textContent = '';
+    } else {
+      totalMonths = Math.ceil(remainingCap / actualInvest);
+      const y = Math.floor(totalMonths / 12);
+      const m = totalMonths % 12;
+      yearsLabel = y + '年' + m + 'ヶ月';
+      yearsSubLabel = 'で元本1,800万到達';
+
+      let balance = existing;
+      for (let i = 1; i <= totalMonths; i++) {
+        balance = (balance + actualInvest) * (1 + MONTHLY_RATE);
+      }
+      finalBalance = balance;
+      const gain = finalBalance - NISA_CAP;
+      endLabel = '資産総額 ' + fmtManInt(finalBalance);
+      endSubLabel = '運用益 +' + fmtManInt(gain);
+
+      if (surplus > NISA_MONTHLY_CAP) {
+        const excess = surplus - NISA_MONTHLY_CAP;
+        capNoteEl.textContent = 'NISA月額上限30万を適用（余剰 ' + fmtMan1(excess) + '/月 は対象外）';
+      } else {
+        capNoteEl.textContent = '';
+      }
+    }
+
+    let lineData;
+    if (totalMonths > 0 && actualInvest > 0) {
+      lineData = simulate(actualInvest, totalMonths, existing);
+    } else {
+      lineData = { labels: [0, 12], principalSeries: [existing, existing], investedSeries: [existing, existing] };
+    }
+
+    const endPoint = (totalMonths > 0 && actualInvest > 0) ? {
+      x: totalMonths,
+      y: finalBalance,
+      label: endLabel,
+      sub: endSubLabel
+    } : null;
+
+    if (!lineChart) {
+      lineChart = new Chart(document.getElementById('line-chart'), {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            { label: '元本', data: [], borderColor: PRINCIPAL_COLOR, backgroundColor: 'rgba(136,135,128,0.08)', borderDash: [5, 4], fill: false, tension: 0, pointRadius: 0, borderWidth: 1.5 },
+            { label: '運用後', data: [], borderColor: SURPLUS_COLOR, backgroundColor: 'rgba(29,158,117,0.12)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          layout: { padding: { top: 52, right: 8, bottom: 0, left: 0 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => {
+                  const m = items[0].parsed.x;
+                  const y = Math.floor(m / 12);
+                  const mo = m % 12;
+                  return y + '年' + mo + 'ヶ月';
+                },
+                label: (ctx) => ctx.dataset.label + ': ' + fmtManInt(ctx.parsed.y)
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              min: 0,
+              max: Math.max(totalMonths, 12),
+              grid: { display: false },
+              ticks: {
+                callback: (v) => {
+                  const y = v / 12;
+                  if (y === 0) return '今';
+                  if (Number.isInteger(y)) return y + '年';
+                  return '';
+                },
+                maxTicksLimit: 8,
+                font: { size: 10 }
+              }
+            },
+            y: {
+              ticks: { callback: (v) => fmtManInt(v), font: { size: 10 } },
+              grid: { color: 'rgba(128,128,128,0.08)' }
+            }
+          }
+        },
+        plugins: [annotationPlugin]
+      });
+    }
+
+    lineChart.data.datasets[0].data = lineData.labels.map((m, i) => ({ x: m, y: lineData.principalSeries[i] }));
+    lineChart.data.datasets[1].data = lineData.labels.map((m, i) => ({ x: m, y: lineData.investedSeries[i] }));
+    lineChart.options.scales.x.max = Math.max(totalMonths, 12);
+    lineChart.$annotations = {
+      targetMonths: totalMonths > 0 ? totalMonths : null,
+      yearsLabel: yearsLabel,
+      yearsSubLabel: yearsSubLabel,
+      endPoint: endPoint ? { x: endPoint.x, y: endPoint.y, label: endPoint.label } : null,
+      endPointSub: endPoint ? endPoint.sub : null
+    };
+    lineChart.update('none');
+
+    const pieLabels = items.map(it => it.label).concat(['投資余力']);
+    const pieData = items.map(it => it.val).concat([surplus]);
+    const pieColors = items.map(it => it.color).concat([SURPLUS_COLOR]);
+
+    const legendEl = document.getElementById('legend');
+    legendEl.innerHTML = pieLabels.map((lbl, i) => {
+      const pct = income > 0 ? Math.round(pieData[i] / income * 100) : 0;
+      const isFlux = lbl === '投資余力';
+      return '<span' + (isFlux ? ' class="surplus-item"' : '') + '><span class="legend-dot" style="background:' + pieColors[i] + ';"></span>' + lbl + ' ' + pct + '%</span>';
+    }).join('');
+
+    if (!pieChart) {
+      pieChart = new Chart(document.getElementById('pie'), {
+        type: 'doughnut',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderWidth: 1, borderColor: '#fff' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const pct = income > 0 ? Math.round(ctx.raw / income * 100) : 0;
+                  return ctx.label + ': ' + fmt(ctx.raw) + ' (' + pct + '%)';
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      pieChart.data.labels = pieLabels;
+      pieChart.data.datasets[0].data = pieData;
+      pieChart.data.datasets[0].backgroundColor = pieColors;
+      pieChart.update('none');
+    }
+  }
+
+  update();
+})();
+</script>
+</body>
+</html>
